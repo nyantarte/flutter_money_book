@@ -189,9 +189,7 @@ class EditTransactionListState extends State<EditTransactionList> {
                     for (var t in m_targetData) {
                       if (0 == t.m_id.length) {
                         t.m_id=Uuid().v1();
-                        t.m_note="a";
-                        t.m_method="a";
-                        t.m_usage="a";
+                        t.m_transDate=this.m_targetDate;
                         DataManagerFactory.getManager().insert(t);
                       }else{
                         DataManagerFactory.getManager().update(t);

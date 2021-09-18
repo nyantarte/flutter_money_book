@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:flutter_money_book/dataManagerFactory.dart';
 import 'package:flutter_money_book/main.dart';
@@ -22,19 +23,46 @@ class EditTransactionState extends State<EditTransaction> {
   String m_valueText = "";
   int m_methodSelected = -1;
   int m_usageSelected = -1;
+  late List<String> m_usages;
+  late List<DropdownMenuItem<int>> m_usagesItems;
+  late List<String> m_methods;
+  late List<DropdownMenuItem<int>> m_methodsItems;
 
   EditTransactionState(this.m_targetData) {
     m_noteText.text = this.m_targetData.m_note;
 
     m_valueText = this.m_targetData.m_value.abs().toString();
 
-
+    m_usages = DataManagerFactory.getManager().getUsages();
+    m_usagesItems = _createDropDownMenuItems(m_usages);
+    m_methods = DataManagerFactory.getManager().getMethods();
+    m_methodsItems = _createDropDownMenuItems(m_methods);
   }
 
   @override
   Widget build(BuildContext context) {
     final dm = DataManagerFactory.getManager();
+    var selMethod = 0;
+    if (-1 == this.m_methodSelected) {
+      if (0 < m_methods.length && 0 < this.m_targetData.m_method.length) {
+        this.m_methodSelected =
+            this.m_methods.indexOf(this.m_targetData.m_method);
+        selMethod = this.m_methodSelected;
+      }
+    } else {
+      selMethod = this.m_methodSelected;
+    }
 
+    var selUsage = 0;
+
+    if (-1 == this.m_usageSelected) {
+      if (0 < m_usages.length && 0 < this.m_targetData.m_usage.length) {
+        this.m_usageSelected = m_usages.indexOf(this.m_targetData.m_usage);
+        selUsage = this.m_usageSelected;
+      }
+    } else {
+      selUsage = this.m_usageSelected;
+    }
     return Scaffold(
         appBar: AppBar(
           title: Text(""),
@@ -43,7 +71,7 @@ class EditTransactionState extends State<EditTransaction> {
           children: [
             Row(
               children: [
-                Text("Type",style: MyApp.globalTextStyle),
+                Text("Type", style: MyApp.globalTextStyle),
                 Radio(
                     value: true,
                     groupValue: m_isValueGreaterZero,
@@ -57,74 +85,34 @@ class EditTransactionState extends State<EditTransaction> {
               ],
             ),
             Row(children: [
-              Text("Method",style: MyApp.globalTextStyle),
-              FutureBuilder(
-                  future: dm.getMethods(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<String>> snapshot) {
-                    List<String> l = [];
-                    if (snapshot.hasData) {
-                      l = snapshot.data!;
-                    }
-                    var i = 0;
-                    if (-1 == this.m_methodSelected) {
-                      if (0 < l.length && 0 < this.m_targetData.m_method.length) {
-                        this.m_methodSelected =
-                            l.indexOf(this.m_targetData.m_method);
-                        i = this.m_methodSelected;
+              Text("Method", style: MyApp.globalTextStyle),
+              DropdownButton<int>(
+                  value: selMethod,
+                  onChanged: (value) {
+                    setState(() {
+                      if (null != value) {
+                        this.m_methodSelected = value;
                       }
-                    }else{
-                      i=this.m_methodSelected;
-                    }
-                    return DropdownButton<int>(
-                        value: i,
-                        onChanged: (value) {
-                          setState(() {
-                            if (null != value && -1 < this.m_methodSelected) {
-                              this.m_methodSelected = value;
-                            }
-                          });
-                        },
-                        items: _createDropDownMenuItems(l));
-                  })
+                    });
+                  },
+                  items: m_methodsItems)
             ]),
             Row(children: [
-              Text("Usage",style: MyApp.globalTextStyle),
-              FutureBuilder(
-                  future: dm.getUsages(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<String>> snapshot) {
-                    List<String> l = [];
-                    if (snapshot.hasData) {
-                      l = snapshot.data!;
-                    }
-                    var i = 0;
-
-                    if (-1 == this.m_usageSelected) {
-                      if (0 < l.length && 0 < this.m_targetData.m_usage.length) {
-                        this.m_usageSelected =
-                            l.indexOf(this.m_targetData.m_usage);
-                        i = this.m_usageSelected;
+              Text("Usage", style: MyApp.globalTextStyle),
+              DropdownButton<int>(
+                  value: selUsage,
+                  onChanged: (value) {
+                    setState(() {
+                      if (null != value) {
+                        this.m_usageSelected = value;
                       }
-                    }else{
-                      i=this.m_usageSelected;
-                    }
-                    return DropdownButton<int>(
-                        value: i,
-                        onChanged: (value) {
-                          setState(() {
-                            if (null != value && -1 < this.m_usageSelected) {
-                                this.m_usageSelected = value;
-
-                            }
-                          });
-                        },
-                        items: _createDropDownMenuItems(l));
-                  })
+                    });
+                  },
+                  items: m_usagesItems)
             ]),
             Row(
               children: [
-                Text("Note   ",style: MyApp.globalTextStyle),
+                Text("Note   ", style: MyApp.globalTextStyle),
                 Expanded(
                     child: TextField(
                         enabled: true,
@@ -134,7 +122,10 @@ class EditTransactionState extends State<EditTransaction> {
               ],
             ),
             Row(
-              children: [Text("Value   ",style: MyApp.globalTextStyle), Text(this.m_valueText,style: MyApp.globalTextStyle)],
+              children: [
+                Text("Value   ", style: MyApp.globalTextStyle),
+                Text(this.m_valueText, style: MyApp.globalTextStyle)
+              ],
             ),
             Row(
               children: [
@@ -445,6 +436,15 @@ class EditTransactionState extends State<EditTransaction> {
                       this.m_targetData.m_value =
                           -double.parse(this.m_valueText).toInt();
                     }
+                    if (-1 < this.m_methodSelected) {
+                      this.m_targetData.m_method =
+                          this.m_methods[this.m_methodSelected];
+                    }
+                    if (-1 < this.m_usageSelected) {
+                      this.m_targetData.m_usage =
+                          this.m_usages[this.m_usageSelected];
+                    }
+                    this.m_targetData.m_note = this.m_noteText.text;
                     Navigator.of(context).pop(this.m_targetData);
                   },
                 ),
@@ -474,7 +474,8 @@ class EditTransactionState extends State<EditTransaction> {
     List<DropdownMenuItem<int>> res = [];
     int i = 0;
     for (var t in l) {
-      res.add(DropdownMenuItem<int>(child: Text(t,style: MyApp.globalTextStyle), value: i++));
+      res.add(DropdownMenuItem<int>(
+          child: Text(t, style: MyApp.globalTextStyle), value: i++));
     }
     return res;
   }

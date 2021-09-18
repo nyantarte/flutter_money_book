@@ -1,4 +1,5 @@
 import 'package:flutter_money_book/dataManager.dart';
+import 'package:flutter_money_book/dataManagerFactory.dart';
 import 'package:flutter_money_book/transactionData.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -17,8 +18,16 @@ class LocalDataManager implements DataManager {
   List<String> m_usages = [];
 
   @override
-  Future<void> dispose() async {}
+  Future<void> init() async{
+    await load(DataManagerFactory.moneyBookFileName);
+  }
+  @override
+  Future<void> dispose() async {
+    save(DataManagerFactory.moneyBookFileName);
 
+  }
+
+  @override
   Future<List<TransactionData>> getTransactionByDate(
       DateTime targetDate) async {
     List<TransactionData> res = [];
@@ -32,16 +41,32 @@ class LocalDataManager implements DataManager {
         res.add(t);
       }
     }
+    developer.log("${res.length} transaction items has found  for ${targetDate.toString()}",
+        name: "${this.runtimeType.toString()}.getTransactionByData");
+    return res;
+  }
+  Future<List<TransactionData>> getTransactionByDateRange(
+      DateTime beginDate,DateTime endDate) async {
+    List<TransactionData> res = [];
+
+    for (var t in m_data) {
+      if (0 <= t.m_transDate.compareTo(beginDate) &&
+          0 > t.m_transDate.compareTo(endDate)) {
+        res.add(t);
+      }
+    }
+    developer.log("${res.length} transaction items has found from ${beginDate.toString()} to ${endDate.toString()}",
+        name: "${this.runtimeType.toString()}.getTransactionByData");
     return res;
   }
 
   @override
-  Future<List<String>> getMethods() async {
+  List<String> getMethods() {
     return m_methods;
   }
 
   @override
-  Future<List<String>> getUsages() async {
+  List<String> getUsages()  {
     return m_usages;
   }
 
@@ -50,8 +75,9 @@ class LocalDataManager implements DataManager {
     this.m_methods = l;
   }
 
-  List<TransactionData> getTransactionsAll() {
-    return m_data;
+  @override
+  Future<List<TransactionData>> getTransactionAll() async{
+    return Future.value(m_data);
   }
 
   @override
@@ -125,7 +151,13 @@ class LocalDataManager implements DataManager {
       for (var l in lineList) {
         final params = l.toString().split(",");
 
-        m_data.add(TransactionData(Uuid().v1(), dFormat.parse(params[1]),
+        String id="";
+        if(Uuid.isValidUUID(fromString: params[0])){
+          id=params[0];
+        }else{
+          id=Uuid().v1();
+        }
+        m_data.add(TransactionData(id, dFormat.parse(params[1]),
             params[2], params[3], int.parse(params[4]), params[5]));
         if (-1 == m_methods.indexOf(params[2])) {
           m_methods.add(params[2]);
@@ -135,8 +167,40 @@ class LocalDataManager implements DataManager {
         }
       }
     }
+    developer.log("${this.m_data.length} transactions has loaded.",
+        name: "${this.runtimeType.toString()}.load");
+
   }
 
+  Future<void> save(String fileName)async {
+    String buf="";
+    for(var t in this.m_data){
+      buf+=t.toCSVString()+"\n";
+    }
+    var dirPath="";
+    if(Platform.isAndroid){
+      await Permission.storage.shouldShowRequestRationale;
+      if (await Permission.storage.isDenied) {
+        dirPath = (await getExternalStorageDirectory())!.path;
+      }
+    } else if (Platform.isWindows) {
+      dirPath = Directory.current.path;
+    }
+
+    developer.log("The application documents directory is ${dirPath}",
+        name: "${this.runtimeType.toString()}.write");
+    var dir = Directory(dirPath);
+    if (!await dir.exists()) {
+      dir.create();
+    }
+    final filePath = "${dir.path}/${fileName}";
+
+    final file = File(filePath);
+    await file.writeAsString(buf);
+    developer.log("${this.m_data.length} transaction has saved.",
+        name: "${this.runtimeType.toString()}.write");
+
+  }
   @override
   Future<void> delete(TransactionData d) async{
     for(var i=0;i < this.m_data.length;++i){

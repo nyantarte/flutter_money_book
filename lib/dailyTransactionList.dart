@@ -7,6 +7,8 @@ import 'package:flutter_money_book/sqliteDataManager.dart';
 import 'package:flutter_money_book/transactionData.dart';
 import 'package:flutter_money_book/editTransactionList.dart';
 import 'package:flutter_money_book/config.dart';
+import "package:flutter/services.dart";
+import 'dart:developer' as developer;
 
 class DailyTransactionList extends StatefulWidget {
   DateTime m_targetDate;
@@ -23,9 +25,14 @@ class DailyTransactionState extends State<DailyTransactionList> {
   List<TransactionData> m_dailyData = [];
   int m_dailyIn = 0;
   int m_dailyOut = 0;
+  int m_monthlyIn = 0;
+  int m_monthlyOut = 0;
   int m_selectedData = -1;
 
   DailyTransactionState(this.m_targetDate);
+
+  final TextStyle m_menuStyle = TextStyle(
+      fontSize: MyApp.globalTextStyle.fontSize, backgroundColor: Colors.white);
 
   @override
   Widget build(BuildContext context) {
@@ -34,76 +41,119 @@ class DailyTransactionState extends State<DailyTransactionList> {
      dm.getDBData().then((value) => print(value));
 */
 
-    var size = MediaQuery.of(context).size;
+    var size = MediaQuery
+        .of(context)
+        .size;
 
     return Scaffold(
         appBar: AppBar(
-          title: Text("${m_targetDate.year}/${m_targetDate.month}/${m_targetDate.day}"),
+          title: Text(
+              "${m_targetDate.year}/${m_targetDate.month}/${m_targetDate.day}"),
         ),
-        drawer: ListView(
-          children: [
-            DrawerHeader(
-              child: Text(
-                "Menu",
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white,
+        backgroundColor: Colors.white,
+        drawer: Container(
+            child: ListView(
+              children: [
+                DrawerHeader(
+                  child: Text(
+                    "Menu",
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
                 ),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
+                ListTile(
+                  title: Text("DAILY", style: MyApp.globalTextStyle),
+                  onTap: () async {
+                    setState(() {
+                      Navigator.of(context).pop();
+                    });
+                  },
+                ),
+                ListTile(
+                  title: Text("Set Date", style: MyApp.globalTextStyle),
+                  onTap: () async {
+                    final reqDate = await showDatePicker(
+                        context: context,
+                        initialDate: this.m_targetDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100));
+                    if (null != reqDate) {
+                      this.m_targetDate = DateTime(
+                          reqDate.year,
+                          reqDate.month,
+                          reqDate.day,
+                          this.m_targetDate.hour,
+                          this.m_targetDate.minute);
+                    }
+                    setState(() {
+                      Navigator.of(context).pop();
+                      updateDailyList();
+                    });
+                  },
+                ),
+                ListTile(
+                  title: Text("CONFIG", style: m_menuStyle),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Config();
+                    }));
+                  },
+                ),
+                ListTile(
+                  title: Text("END APP", style: m_menuStyle),
+                  onTap: () async {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                    await SystemNavigator.pop();
+                  },
+                )
+              ],
             ),
-            ListTile(
-              title: Text("Set Date"),
-              onTap: () async {
-                final reqDate = await showDatePicker(
-                    context: context,
-                    initialDate: this.m_targetDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100));
-                if (null != reqDate) {
-                  this.m_targetDate = reqDate;
-                }
-                setState(() {
-                  Navigator.of(context).pop();
-                  updateDailyList();
-                });
-              },
-            ),
-            ListTile(
-              title: Text("CONFIG"),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) {
-                  return Config();
-                }));
-              },
-            )
-          ],
-        ),
+            color: Colors.white),
         body: Column(children: [
-          Align(
-              alignment: Alignment.topLeft,
-              child: Text("Daily spends IN:${m_dailyIn} OUT:${m_dailyOut}",style: MyApp.globalTextStyle)),
           FutureBuilder(
               future: updateDailyList(),
               builder: (BuildContext context,
                   AsyncSnapshot<List<TransactionData>> snapshot) {
                 return Expanded(
-                    child: ListView.builder(
-                        itemCount: this.m_dailyData.length,
+                    child:
+
+                    ListView.builder(
+                        itemCount: this.m_dailyData.length + 2,
                         itemBuilder: (context, i) {
-                          return new RadioListTile(
-                            activeColor: Colors.blue,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            title: Text(this.m_dailyData[i].toString(),style: MyApp.globalTextStyle),
-                            value: i,
-                            groupValue: this.m_selectedData,
-                            onChanged: _handleDataSelect,
-                          );
-                        }));
+                          if (0 == i) {
+                            return Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                    "Monthly spends IN:${m_monthlyIn} OUT:${m_monthlyOut}",
+                                    style: MyApp.globalTextStyle));
+                          } else if (1 == i) {
+                            return Align(
+                                alignment: Alignment.topLeft,
+                                child: Text(
+                                    "Daily spends IN:${m_dailyIn} OUT:${m_dailyOut}",
+                                    style: MyApp.globalTextStyle));
+                          } else {
+                            return new RadioListTile(
+                              activeColor: Colors.blue,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              title: Text(this.m_dailyData[i - 2].toString(),
+                                  style: MyApp.globalTextStyle),
+                              value: i,
+                              groupValue: this.m_selectedData,
+                              onChanged: _handleDataSelect,
+                            );
+                          }
+                        })
+                );
+
               }),
           Row(children: [
             ElevatedButton(
@@ -122,12 +172,13 @@ class DailyTransactionState extends State<DailyTransactionList> {
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) {
-                  return EditTransactionList(this.m_targetDate,null);
-                })).then((value) => setState(() {
-                  if(null!=value) {
-                    this.m_targetDate = value;
-                  }
-                        }));
+                  return EditTransactionList(this.m_targetDate, null);
+                })).then((value) =>
+                    setState(() {
+                      if (null != value) {
+                        this.m_targetDate = value;
+                      }
+                    }));
               },
             ),
             ElevatedButton(
@@ -143,18 +194,16 @@ class DailyTransactionState extends State<DailyTransactionList> {
                   ),
                 ),
               ),
-              onPressed: () async{
-                if(-1!=this.m_selectedData) {
+              onPressed: () async {
+                if (-1 != this.m_selectedData) {
                   final t = this.m_dailyData[this.m_selectedData];
-                  await DataManagerFactory.getManager().delete(t);
-                  setState(() {
-
-                  });
+                  await (await DataManagerFactory.getManager()).delete(t);
+                  setState(() {});
                 }
               },
             ),
             ElevatedButton(
-              child:  Icon(Icons.brush),
+              child: Icon(Icons.brush),
               style: ElevatedButton.styleFrom(
                 primary: Colors.blueAccent,
                 onPrimary: Colors.black,
@@ -167,14 +216,16 @@ class DailyTransactionState extends State<DailyTransactionList> {
                 ),
               ),
               onPressed: () {
-                if(-1!=m_selectedData) {
+                if (-1 != m_selectedData) {
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (context) {
                     return EditTransactionList(this.m_targetDate,
                         this.m_dailyData[this.m_selectedData]);
                   })).then((value) =>
                       setState(() {
-                        this.m_targetDate = value;
+                        if (null != value) {
+                          this.m_targetDate = value;
+                        }
                       }));
                 }
               },
@@ -184,8 +235,29 @@ class DailyTransactionState extends State<DailyTransactionList> {
   }
 
   Future<List<TransactionData>> updateDailyList() async {
+    await DataManagerFactory.getManager().init();
     var dManager = DataManagerFactory.getManager();
-
+    final mBeginDate =
+    DateTime(this.m_targetDate.year, this.m_targetDate.month, 1);
+    var mEndDate = mBeginDate;
+    if (12 == mEndDate.month) {
+      mEndDate = DateTime(mEndDate.year + 1, 1, 1);
+    } else {
+      mEndDate = DateTime(mEndDate.year, mEndDate.month + 1, 1);
+    }
+    await dManager
+        .getTransactionByDateRange(mBeginDate, mEndDate)
+        .then((value) {
+      m_monthlyIn = 0;
+      m_monthlyOut = 0;
+      for (var t in value) {
+        if (0 < t.m_value) {
+          m_monthlyIn += t.m_value;
+        } else {
+          m_monthlyOut += -t.m_value;
+        }
+      }
+    });
     await dManager.getTransactionByDate(this.m_targetDate).then((value) {
       m_dailyIn = 0;
       m_dailyOut = 0;
@@ -207,10 +279,10 @@ class DailyTransactionState extends State<DailyTransactionList> {
       m_selectedData = d ?? -1;
     });
   }
+
   @override
   void dispose() {
-    super.dispose();
-    //SqliteDataManager.s_self.dispose();
     DataManagerFactory.getManager().dispose();
+    super.dispose();
   }
 }

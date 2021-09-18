@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_book/sqliteDataManager.dart';
 import 'package:flutter_money_book/localDataManager.dart';
 import 'dart:developer' as developer;
-
+import 'dart:io';
 class Config extends StatefulWidget {
   Config() : super();
 
@@ -40,6 +40,16 @@ class ConfigState extends State<Config> {
               },
             ),
             ElevatedButton(
+              child: const Text('EXPORT TO FILE'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueAccent,
+                onPrimary: Colors.white,
+              ),
+              onPressed: () {
+                _exportToFile();
+              },
+            ),
+            ElevatedButton(
               child: const Text('CLEAR DATA'),
               style: ElevatedButton.styleFrom(
                 primary: Colors.blueAccent,
@@ -55,16 +65,29 @@ class ConfigState extends State<Config> {
   }
 
   void _importFromFile() async {
+    if(!Platform.isWindows) {
+      final lDM = LocalDataManager();
+      final sqDM = DataManagerFactory.getManager();
+      await lDM.load("backup.csv");
+      var tList=await lDM.getTransactionAll();
+      await sqDM.insertAll(tList);
+      developer.log("${tList.length} items has imported.",
+          name: "${this.runtimeType.toString()}._importFromFile");
+
+      var methods = await lDM.getMethods();
+      developer.log("${methods.length}");
+      var usages = await lDM.getUsages();
+      await sqDM.setMethods(methods);
+      await sqDM.setUsages(usages);
+    }
+  }
+  void _exportToFile() async{
     final lDM = LocalDataManager();
     final sqDM = DataManagerFactory.getManager();
-    await lDM.load("backup.csv");
-    sqDM.insertAll(lDM.getTransactionsAll());
-    developer.log("${lDM.getTransactionsAll().length} items has imported.",
-        name: "${this.runtimeType.toString()}._importFromFile");
+    await sqDM.getTransactionAll().then((value){
+      lDM.insertAll(value);
+    });
+    await lDM.save(DataManagerFactory.moneyBookExportFileName);
 
-    var methods = await lDM.getMethods();
-    var usages = await lDM.getUsages();
-    await sqDM.setMethods(methods);
-    await sqDM.setUsages(usages);
   }
 }

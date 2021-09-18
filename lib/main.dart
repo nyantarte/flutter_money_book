@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_book/dailyTransactionList.dart';
+import 'package:flutter_money_book/dataManagerFactory.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_money_book/sqliteDataManager.dart';
-void main(){
+void main() async{
   initializeDateFormatting('ja');
   runApp(MyApp());
 
@@ -49,6 +50,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+
 
   @override
   _MyHomePageState createState() => _MyHomePageState();

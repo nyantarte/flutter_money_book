@@ -23,7 +23,12 @@ class TransactionData{
 
   @override
   String toString(){
-    return "${this.m_transDate.year}/${this.m_transDate.month}/${this.m_transDate.day} ${this.m_transDate.hour}:${this.m_transDate.minute}  ${m_method} ${m_note} ${m_value}";
+    return "${this.m_transDate.year}/${this.m_transDate.month}/${this.m_transDate.day} ${this.m_transDate.hour}:${this.m_transDate.minute} ${m_value} ${m_note}";
+  }
+
+  String toCSVString(){
+    return "${this.m_id},${this.m_transDate.year}/${this.m_transDate.month}/${this.m_transDate.day} ${this.m_transDate.hour}:${this.m_transDate.minute},${this.m_method},${this.m_usage},${this.m_value},${this.m_note}";
+
   }
   static TransactionData create(){
 
