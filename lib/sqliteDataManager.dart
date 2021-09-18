@@ -62,9 +62,12 @@ class SqliteDataManager implements DataManager {
     final db = await m_db;
 
     final list = await db.transaction((txn) async {
-      await txn.query("moneybook");
+      return await txn.query("moneybook");
     });
-    return list;
+    for (var t in list) {
+      res.add(genTransactionData(t));
+    }
+    return Future.value(res);
 
   }
   @override
@@ -78,7 +81,7 @@ class SqliteDataManager implements DataManager {
     final db = await m_db;
 
     final list = await db.transaction((txn) async {
-      await txn.query("moneybook",
+      return await txn.query("moneybook",
           where: "transactionDate>=? AND transactionDate<?",
           whereArgs: [
             beginDate.millisecondsSinceEpoch,
@@ -100,7 +103,7 @@ class SqliteDataManager implements DataManager {
     final db = await m_db;
 
     final list = await db.transaction((txn) async {
-      await txn.query("moneybook",
+      return await txn.query("moneybook",
           where: "transactionDate>=? AND transactionDate<?",
           whereArgs: [
             beginDate.millisecondsSinceEpoch,

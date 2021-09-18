@@ -124,10 +124,14 @@ class LocalDataManager implements DataManager {
     var dirPath = "";
     if (Platform.isAndroid) {
       await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isDenied) {
+      if (await Permission.storage.isGranted) {
         dirPath = (await getExternalStorageDirectory())!.path;
       }
-    } else if (Platform.isWindows) {
+    }else if(Platform.isIOS) {
+      if(await Permission.storage.isGranted) {
+        dirPath = (await getApplicationDocumentsDirectory() ).path;
+      }
+    }   else if (Platform.isWindows) {
       dirPath = Directory.current.path;
     }
     developer.log("The application documents directory is ${dirPath}",
@@ -182,6 +186,10 @@ class LocalDataManager implements DataManager {
       await Permission.storage.shouldShowRequestRationale;
       if (await Permission.storage.isDenied) {
         dirPath = (await getExternalStorageDirectory())!.path;
+      }
+    }else if(Platform.isIOS) {
+      if(await Permission.storage.isGranted) {
+        dirPath = (await getApplicationDocumentsDirectory() ).path;
       }
     } else if (Platform.isWindows) {
       dirPath = Directory.current.path;
