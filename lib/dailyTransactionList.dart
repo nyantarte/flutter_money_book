@@ -146,7 +146,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
                               controlAffinity: ListTileControlAffinity.leading,
                               title: Text(this.m_dailyData[i - 2].toString(),
                                   style: MyApp.globalTextStyle),
-                              value: i,
+                              value: i-2,
                               groupValue: this.m_selectedData,
                               onChanged: _handleDataSelect,
                             );
@@ -177,6 +177,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
                     setState(() {
                       if (null != value) {
                         this.m_targetDate = value;
+                        developer.log("return date ${value.toString()}");
                       }
                     }));
               },
@@ -217,6 +218,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
               ),
               onPressed: () {
                 if (-1 != m_selectedData) {
+                  developer.log("Request index ${m_selectedData} data to edit");
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (context) {
                     return EditTransactionList(this.m_targetDate,
@@ -225,6 +227,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
                       setState(() {
                         if (null != value) {
                           this.m_targetDate = value;
+                          developer.log("return date ${value.toString()}");
                         }
                       }));
                 }

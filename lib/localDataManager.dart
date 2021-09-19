@@ -19,7 +19,9 @@ class LocalDataManager implements DataManager {
 
   @override
   Future<void> init() async{
-    await load(DataManagerFactory.moneyBookFileName);
+    if(0==m_data.length) {
+      await load(DataManagerFactory.moneyBookFileName);
+    }
   }
   @override
   Future<void> dispose() async {
@@ -109,6 +111,7 @@ class LocalDataManager implements DataManager {
       var t = this.m_data[i];
       if (t.m_id == d.m_id) {
         this.m_data[i] = d;
+        developer.log("Updating transaction ${t.m_id} ${d.toString()}");
       }
     }
   }

@@ -115,7 +115,7 @@ class SqliteDataManager implements DataManager {
       res.add(genTransactionData(t));
     }
 
-    developer.log("${res.length} transaction items has found from ${beginDate.toString()} to ${endDate.toString}",
+    developer.log("${res.length} transaction items has found from ${beginDate.toString()} to ${endDate.toString()}",
         name: "${this.runtimeType.toString()}.getTransactionByData");
     return Future.value(res);
 
@@ -130,7 +130,7 @@ class SqliteDataManager implements DataManager {
     final note = map["note"] ?? "";
     return TransactionData(
         id,
-        DateTime.fromMillisecondsSinceEpoch(tDate, isUtc: true),
+        DateTime.fromMillisecondsSinceEpoch(tDate, isUtc: false),
         method,
         usage,
         value,
