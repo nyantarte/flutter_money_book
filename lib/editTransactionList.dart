@@ -28,15 +28,17 @@ class EditTransactionListState extends State<EditTransactionList> {
   DateTime m_targetDate;
   List<TransactionData> m_targetData = [];
   int m_selectedData = -1;
-
+  int m_totalValue=0;
   EditTransactionListState(this.m_targetDate, this.m_targetData) {
     if (0 < this.m_targetData.length) {
       this.m_targetDate = this.m_targetData[0].m_transDate;
     }
+
   }
 
   @override
   Widget build(BuildContext context) {
+    _calcTotal();
     return Scaffold(
         appBar: AppBar(
           title: Text(""),
@@ -125,6 +127,8 @@ class EditTransactionListState extends State<EditTransactionList> {
                 },
               ),
             ]),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("Total ${m_totalValue}",style:MyApp.globalTextStyle, textAlign: TextAlign.left)]),
             Expanded(
                 child: ListView.builder(
                     itemCount: this.m_targetData.length,
@@ -188,7 +192,10 @@ class EditTransactionListState extends State<EditTransactionList> {
                     this.m_targetData.removeAt(this.m_selectedData);
                     this.m_selectedData = -1;
 
-                    setState(() {});
+                    setState(() {
+
+
+                    });
                   }
                 },
               ),
@@ -276,5 +283,11 @@ class EditTransactionListState extends State<EditTransactionList> {
     setState(() {
       this.m_selectedData = d ?? -1;
     });
+  }
+  void _calcTotal(){
+    m_totalValue=0;
+    for(var t in m_targetData){
+      m_totalValue+=t.m_value;
+    }
   }
 }

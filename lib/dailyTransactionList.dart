@@ -274,6 +274,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
       }
     });
 
+    m_dailyData.sort((a,b)=>a.m_transDate.compareTo(b.m_transDate));
     return this.m_dailyData;
   }
 
