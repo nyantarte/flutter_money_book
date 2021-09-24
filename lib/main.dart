@@ -14,6 +14,7 @@ void main() async{
 
 class MyApp extends StatelessWidget {
   static TextStyle globalTextStyle=TextStyle(fontSize: 24);
+  static NumberFormat globalPriceFormatter=NumberFormat("#,###");
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {

@@ -128,7 +128,19 @@ class EditTransactionListState extends State<EditTransactionList> {
               ),
             ]),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text("Total ${m_totalValue}",style:MyApp.globalTextStyle, textAlign: TextAlign.left)]),
+            ElevatedButton(
+              child: const Text('Set current date time'),
+              style: ElevatedButton.styleFrom(
+                primary: Colors.blueAccent,
+                onPrimary: Colors.white,
+              ),
+              onPressed: () async {
+                final curDate=DateTime.now();
+                _setDateAndTime(curDate);
+              },
+            )]),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Text("Total ${MyApp.globalPriceFormatter.format(m_totalValue)}",style:MyApp.globalTextStyle, textAlign: TextAlign.left)]),
             Expanded(
                 child: ListView.builder(
                     itemCount: this.m_targetData.length,
@@ -276,6 +288,11 @@ class EditTransactionListState extends State<EditTransactionList> {
       this.m_targetDate = DateTime(nDate.year, nDate.month, nDate.day,
           this.m_targetDate.hour, this.m_targetDate.minute);
 
+    });
+  }
+  void _setDateAndTime(DateTime tDate){
+    setState((){
+      this.m_targetDate=tDate;
     });
   }
 

@@ -127,7 +127,8 @@ class LocalDataManager implements DataManager {
     var dirPath = "";
     if (Platform.isAndroid) {
       await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isGranted) {
+      if (await Permission.storage.isDenied) {
+        developer.log("Storage permission is granted in android",name: "${this.runtimeType.toString()}.load");
         dirPath = (await getExternalStorageDirectory())!.path;
       }
     }else if(Platform.isIOS) {

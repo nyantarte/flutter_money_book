@@ -132,13 +132,13 @@ class DailyTransactionState extends State<DailyTransactionList> {
                             return Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                    "Monthly spends IN:${m_monthlyIn} OUT:${m_monthlyOut}",
+                                    "Monthly spends IN:${MyApp.globalPriceFormatter.format(m_monthlyIn)} OUT:${MyApp.globalPriceFormatter.format(m_monthlyOut)}",
                                     style: MyApp.globalTextStyle));
                           } else if (1 == i) {
                             return Align(
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                    "Daily spends IN:${m_dailyIn} OUT:${m_dailyOut}",
+                                    "Daily spends IN:${MyApp.globalPriceFormatter.format(m_dailyIn)} OUT:${MyApp.globalPriceFormatter.format(m_dailyOut)}",
                                     style: MyApp.globalTextStyle));
                           } else {
                             return new RadioListTile(

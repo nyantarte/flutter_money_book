@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'package:flutter_money_book/main.dart';
 class TransactionData{
   String m_id;
   DateTime m_transDate;
@@ -23,7 +24,7 @@ class TransactionData{
 
   @override
   String toString(){
-    return "${this.m_transDate.year}/${this.m_transDate.month}/${this.m_transDate.day} ${this.m_transDate.hour}:${this.m_transDate.minute} ${m_value} ${m_note}";
+    return "${this.m_transDate.year}/${this.m_transDate.month}/${this.m_transDate.day} ${this.m_transDate.hour}:${this.m_transDate.minute} ${MyApp.globalPriceFormatter.format(m_value)} ${m_note}";
   }
 
   String toCSVString(){
