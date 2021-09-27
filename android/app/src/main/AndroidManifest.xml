@@ -2,7 +2,9 @@
     package="com.example.flutter_money_book">
    <application
         android:label="flutter_money_book"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+
+       >
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

@@ -123,28 +123,24 @@ class LocalDataManager implements DataManager {
     this.m_methods = [];
   }
 
-  Future<void> load(String fileName) async {
-    var dirPath = "";
+  Future<void> load(String filePath) async {
+
     if (Platform.isAndroid) {
       await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isDenied) {
+      if (await Permission.storage.isGranted) {
         developer.log("Storage permission is granted in android",name: "${this.runtimeType.toString()}.load");
-        dirPath = (await getExternalStorageDirectory())!.path;
+
       }
     }else if(Platform.isIOS) {
       if(await Permission.storage.isGranted) {
-        dirPath = (await getApplicationDocumentsDirectory() ).path;
+
       }
     }   else if (Platform.isWindows) {
-      dirPath = Directory.current.path;
+
     }
-    developer.log("The application documents directory is ${dirPath}",
-        name: "${this.runtimeType.toString()}.load");
-    var dir = Directory(dirPath);
-    if (!await dir.exists()) {
-      dir.create();
-    }
-    final filePath = "${dir.path}/${fileName}";
+
+
+
 
     final file = File(filePath);
     if (await file.exists()) {
@@ -180,32 +176,21 @@ class LocalDataManager implements DataManager {
 
   }
 
-  Future<void> save(String fileName)async {
+  Future<void> save(String filePath)async {
     String buf="";
     for(var t in this.m_data){
       buf+=t.toCSVString()+"\n";
     }
-    var dirPath="";
     if(Platform.isAndroid){
       await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isDenied) {
-        dirPath = (await getExternalStorageDirectory())!.path;
+      if (await Permission.storage.isGranted) {
       }
     }else if(Platform.isIOS) {
       if(await Permission.storage.isGranted) {
-        dirPath = (await getApplicationDocumentsDirectory() ).path;
       }
     } else if (Platform.isWindows) {
-      dirPath = Directory.current.path;
     }
 
-    developer.log("The application documents directory is ${dirPath}",
-        name: "${this.runtimeType.toString()}.write");
-    var dir = Directory(dirPath);
-    if (!await dir.exists()) {
-      dir.create();
-    }
-    final filePath = "${dir.path}/${fileName}";
 
     final file = File(filePath);
     await file.writeAsString(buf);

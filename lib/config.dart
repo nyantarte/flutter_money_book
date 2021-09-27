@@ -5,6 +5,7 @@ import 'package:flutter_money_book/sqliteDataManager.dart';
 import 'package:flutter_money_book/localDataManager.dart';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 class Config extends StatefulWidget {
   Config() : super();
 
@@ -66,9 +67,18 @@ class ConfigState extends State<Config> {
 
   void _importFromFile() async {
     if(!Platform.isWindows) {
+      final pickResult=await FilePicker.platform.pickFiles(
+        type:FileType.any,
+        allowedExtensions: ["csv"]
+
+      );
+      if(0==pickResult!.count){
+        return;
+      }
+      final filePath=pickResult.paths.elementAt(0)!;
       final lDM = LocalDataManager();
       final sqDM = DataManagerFactory.getManager();
-      await lDM.load("backup.csv");
+      await lDM.load(filePath);
       var tList=await lDM.getTransactionAll();
       await sqDM.insertAll(tList);
       developer.log("${tList.length} items has imported.",
@@ -87,7 +97,11 @@ class ConfigState extends State<Config> {
     await sqDM.getTransactionAll().then((value){
       lDM.insertAll(value);
     });
-    await lDM.save(DataManagerFactory.moneyBookExportFileName);
 
+    final outputFile = await FilePicker.platform.getDirectoryPath();
+
+    if(null!=outputFile) {
+      await lDM.save(outputFile+"/${DataManagerFactory.moneyBookExportFileName}");
+    }
   }
 }
