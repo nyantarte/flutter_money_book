@@ -6,19 +6,21 @@ import 'package:intl/intl.dart';
 
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_money_book/sqliteDataManager.dart';
-void main() async{
+
+void main() async {
   initializeDateFormatting('ja');
   runApp(MyApp());
-
 }
 
 class MyApp extends StatelessWidget {
-  static TextStyle globalTextStyle=TextStyle(fontSize: 24);
-  static NumberFormat globalPriceFormatter=NumberFormat("#,###");
+  static TextStyle globalTextStyle = TextStyle(fontSize: 24);
+  static NumberFormat globalPriceFormatter = NumberFormat("#,###");
+  static DateFormat globalDateTimeFormatter = DateFormat("yyyy/MM/dd HH:mm");
+  static DateFormat globalDateFormatter = DateFormat("yyyy/MM/dd");
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -33,7 +35,8 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home:DailyTransactionList(DateTime.now()),// MyHomePage(title: 'Flutter Demo Home Page'),
+      home: DailyTransactionList(
+          DateTime.now()), // MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -51,7 +54,6 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-
 
   @override
   _MyHomePageState createState() => _MyHomePageState();

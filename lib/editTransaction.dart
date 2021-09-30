@@ -67,7 +67,8 @@ class EditTransactionState extends State<EditTransaction> {
         appBar: AppBar(
           title: Text(""),
         ),
-        body: Column(
+        body: SingleChildScrollView(
+          child:Column(
           children: [
             Row(
               children: [
@@ -464,7 +465,7 @@ class EditTransactionState extends State<EditTransaction> {
               ],
             )
           ],
-        ));
+        )));
   }
 
   void _handleGreaterZero(bool? f) =>

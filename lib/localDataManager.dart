@@ -3,7 +3,7 @@ import 'package:flutter_money_book/dataManagerFactory.dart';
 import 'package:flutter_money_book/transactionData.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
+
 import "package:path_provider/path_provider.dart";
 import 'dart:io';
 import 'dart:developer' as developer;
@@ -125,19 +125,7 @@ class LocalDataManager implements DataManager {
 
   Future<void> load(String filePath) async {
 
-    if (Platform.isAndroid) {
-      await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isGranted) {
-        developer.log("Storage permission is granted in android",name: "${this.runtimeType.toString()}.load");
 
-      }
-    }else if(Platform.isIOS) {
-      if(await Permission.storage.isGranted) {
-
-      }
-    }   else if (Platform.isWindows) {
-
-    }
 
 
 
@@ -181,15 +169,7 @@ class LocalDataManager implements DataManager {
     for(var t in this.m_data){
       buf+=t.toCSVString()+"\n";
     }
-    if(Platform.isAndroid){
-      await Permission.storage.shouldShowRequestRationale;
-      if (await Permission.storage.isGranted) {
-      }
-    }else if(Platform.isIOS) {
-      if(await Permission.storage.isGranted) {
-      }
-    } else if (Platform.isWindows) {
-    }
+
 
 
     final file = File(filePath);

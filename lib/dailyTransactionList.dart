@@ -7,29 +7,38 @@ import 'package:flutter_money_book/sqliteDataManager.dart';
 import 'package:flutter_money_book/transactionData.dart';
 import 'package:flutter_money_book/editTransactionList.dart';
 import 'package:flutter_money_book/config.dart';
+import 'package:flutter_money_book/report.dart';
 import "package:flutter/services.dart";
 import 'dart:developer' as developer;
 
+/**
+ * @brief A form for displaying transaction list for the day selected. 
+ */
 class DailyTransactionList extends StatefulWidget {
-  DateTime m_targetDate;
+  DateTime m_targetDate; /*! Target date selected*/
 
+  /**
+   * @brief Constructor
+   * @param Target date to show transaction date.
+   */
   DailyTransactionList(this.m_targetDate) : super();
 
   @override
-  DailyTransactionState createState() =>
-      DailyTransactionState(this.m_targetDate);
+  DailyTransactionState createState() => DailyTransactionState();
 }
 
+/**
+ * @brief State for form to show daily transaction list.
+ */
 class DailyTransactionState extends State<DailyTransactionList> {
-  DateTime m_targetDate;
-  List<TransactionData> m_dailyData = [];
-  int m_dailyIn = 0;
-  int m_dailyOut = 0;
+  List<TransactionData> m_dailyData = []; /*! List to show transactions*/
+  int m_dailyIn = 0; /*! Daily income value.*/
+  int m_dailyOut = 0; /*! Daily outcome value.*/
   int m_monthlyIn = 0;
   int m_monthlyOut = 0;
   int m_selectedData = -1;
 
-  DailyTransactionState(this.m_targetDate);
+  DailyTransactionState();
 
   final TextStyle m_menuStyle = TextStyle(
       fontSize: MyApp.globalTextStyle.fontSize, backgroundColor: Colors.white);
@@ -41,14 +50,11 @@ class DailyTransactionState extends State<DailyTransactionList> {
      dm.getDBData().then((value) => print(value));
 */
 
-    var size = MediaQuery
-        .of(context)
-        .size;
-
+    var size = MediaQuery.of(context).size;
     return Scaffold(
         appBar: AppBar(
           title: Text(
-              "${m_targetDate.year}/${m_targetDate.month}/${m_targetDate.day}"),
+              "${this.widget.m_targetDate.year}/${this.widget.m_targetDate.month}/${this.widget.m_targetDate.day}"),
         ),
         backgroundColor: Colors.white,
         drawer: Container(
@@ -79,21 +85,31 @@ class DailyTransactionState extends State<DailyTransactionList> {
                   onTap: () async {
                     final reqDate = await showDatePicker(
                         context: context,
-                        initialDate: this.m_targetDate,
+                        initialDate: this.widget.m_targetDate,
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100));
                     if (null != reqDate) {
-                      this.m_targetDate = DateTime(
+                      this.widget.m_targetDate = DateTime(
                           reqDate.year,
                           reqDate.month,
                           reqDate.day,
-                          this.m_targetDate.hour,
-                          this.m_targetDate.minute);
+                          this.widget.m_targetDate.hour,
+                          this.widget.m_targetDate.minute);
                     }
                     setState(() {
                       Navigator.of(context).pop();
                       updateDailyList();
                     });
+                  },
+                ),
+                ListTile(
+                  title: Text("REPORT", style: m_menuStyle),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return Report(this.widget.m_targetDate);
+                    }));
                   },
                 ),
                 ListTile(
@@ -123,9 +139,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
               builder: (BuildContext context,
                   AsyncSnapshot<List<TransactionData>> snapshot) {
                 return Expanded(
-                    child:
-
-                    ListView.builder(
+                    child: ListView.builder(
                         itemCount: this.m_dailyData.length + 2,
                         itemBuilder: (context, i) {
                           if (0 == i) {
@@ -146,14 +160,12 @@ class DailyTransactionState extends State<DailyTransactionList> {
                               controlAffinity: ListTileControlAffinity.leading,
                               title: Text(this.m_dailyData[i - 2].toString(),
                                   style: MyApp.globalTextStyle),
-                              value: i-2,
+                              value: i - 2,
                               groupValue: this.m_selectedData,
                               onChanged: _handleDataSelect,
                             );
                           }
-                        })
-                );
-
+                        }));
               }),
           Row(children: [
             ElevatedButton(
@@ -172,14 +184,13 @@ class DailyTransactionState extends State<DailyTransactionList> {
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (context) {
-                  return EditTransactionList(this.m_targetDate, null);
-                })).then((value) =>
-                    setState(() {
-                      if (null != value) {
-                        this.m_targetDate = value;
-                        developer.log("return date ${value.toString()}");
-                      }
-                    }));
+                  return EditTransactionList(this.widget.m_targetDate, null);
+                })).then((value) => setState(() {
+                          if (null != value) {
+                            this.widget.m_targetDate = value;
+                            developer.log("return date ${value.toString()}");
+                          }
+                        }));
               },
             ),
             ElevatedButton(
@@ -221,15 +232,14 @@ class DailyTransactionState extends State<DailyTransactionList> {
                   developer.log("Request index ${m_selectedData} data to edit");
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (context) {
-                    return EditTransactionList(this.m_targetDate,
+                    return EditTransactionList(this.widget.m_targetDate,
                         this.m_dailyData[this.m_selectedData]);
-                  })).then((value) =>
-                      setState(() {
-                        if (null != value) {
-                          this.m_targetDate = value;
-                          developer.log("return date ${value.toString()}");
-                        }
-                      }));
+                  })).then((value) => setState(() {
+                            if (null != value) {
+                              this.widget.m_targetDate = value;
+                              developer.log("return date ${value.toString()}");
+                            }
+                          }));
                 }
               },
             )
@@ -240,8 +250,8 @@ class DailyTransactionState extends State<DailyTransactionList> {
   Future<List<TransactionData>> updateDailyList() async {
     await DataManagerFactory.getManager().init();
     var dManager = DataManagerFactory.getManager();
-    final mBeginDate =
-    DateTime(this.m_targetDate.year, this.m_targetDate.month, 1);
+    final mBeginDate = DateTime(
+        this.widget.m_targetDate.year, this.widget.m_targetDate.month, 1);
     var mEndDate = mBeginDate;
     if (12 == mEndDate.month) {
       mEndDate = DateTime(mEndDate.year + 1, 1, 1);
@@ -261,7 +271,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
         }
       }
     });
-    await dManager.getTransactionByDate(this.m_targetDate).then((value) {
+    await dManager.getTransactionByDate(this.widget.m_targetDate).then((value) {
       m_dailyIn = 0;
       m_dailyOut = 0;
       m_dailyData = value;
@@ -274,7 +284,7 @@ class DailyTransactionState extends State<DailyTransactionList> {
       }
     });
 
-    m_dailyData.sort((a,b)=>a.m_transDate.compareTo(b.m_transDate));
+    m_dailyData.sort((a, b) => a.m_transDate.compareTo(b.m_transDate));
     return this.m_dailyData;
   }
 

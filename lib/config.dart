@@ -6,6 +6,7 @@ import 'package:flutter_money_book/localDataManager.dart';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 class Config extends StatefulWidget {
   Config() : super();
 
@@ -67,8 +68,19 @@ class ConfigState extends State<Config> {
 
   void _importFromFile() async {
     if(!Platform.isWindows) {
+      if (Platform.isAndroid) {
+        await Permission.manageExternalStorage.shouldShowRequestRationale;
+        //await Permission.storage.shouldShowRequestRationale;
+        if (/*await Permission.storage.isDenied || */await Permission.manageExternalStorage.isDenied) {
+          return;
+        }
+      }else if(Platform.isIOS) {
+        if(await Permission.storage.isDenied) {
+
+        }
+      }
       final pickResult=await FilePicker.platform.pickFiles(
-        type:FileType.any,
+        type:FileType.custom,
         allowedExtensions: ["csv"]
 
       );
@@ -92,6 +104,18 @@ class ConfigState extends State<Config> {
     }
   }
   void _exportToFile() async{
+    if(Platform.isAndroid){
+      //await Permission.storage.shouldShowRequestRationale;
+
+      await Permission.manageExternalStorage.shouldShowRequestRationale;
+      if ( await Permission.manageExternalStorage.isDenied /*await Permission.storage.isDenied*/) {
+        return;
+      }
+    }else if(Platform.isIOS) {
+      if(await Permission.storage.isDenied) {
+        return;
+      }
+    }
     final lDM = LocalDataManager();
     final sqDM = DataManagerFactory.getManager();
     await sqDM.getTransactionAll().then((value){
