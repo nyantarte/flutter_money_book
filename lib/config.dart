@@ -7,6 +7,7 @@ import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info/device_info.dart';
 class Config extends StatefulWidget {
   Config() : super();
 
@@ -69,10 +70,28 @@ class ConfigState extends State<Config> {
   void _importFromFile() async {
     if(!Platform.isWindows) {
       if (Platform.isAndroid) {
-        await Permission.manageExternalStorage.shouldShowRequestRationale;
-        //await Permission.storage.shouldShowRequestRationale;
-        if (/*await Permission.storage.isDenied || */await Permission.manageExternalStorage.isDenied) {
-          return;
+        DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        developer.log(androidInfo.version.release);
+        developer.log(androidInfo.version.previewSdkInt!.toString());
+        developer.log(androidInfo.version.sdkInt.toString());
+
+        if(30<=androidInfo.version.previewSdkInt!) {
+          await Permission.manageExternalStorage.shouldShowRequestRationale;
+          //await Permission.storage.shouldShowRequestRationale;
+          if (/*await Permission.storage.isDenied || */await Permission.manageExternalStorage.isDenied) {
+            developer.log(
+                "Sorry this function needs MANAGE_EXTERNAL_STORAGE permition",
+                name: "${this.runtimeType.toString()}._importFromFile");
+            return;
+          }
+        }else if(19 <=androidInfo.version.sdkInt){
+            await Permission.storage.shouldShowRequestRationale;
+            if(await Permission.storage.isDenied){
+              developer.log("Sorry this function needs READ_EXTERNAL_STORAGE permition", name:"${this.runtimeType.toString()}._importFromFile");
+
+            }
+
         }
       }else if(Platform.isIOS) {
         if(await Permission.storage.isDenied) {
@@ -105,12 +124,28 @@ class ConfigState extends State<Config> {
   }
   void _exportToFile() async{
     if(Platform.isAndroid){
-      //await Permission.storage.shouldShowRequestRationale;
+      DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+      final androidInfo = await deviceInfoPlugin.androidInfo;
 
-      await Permission.manageExternalStorage.shouldShowRequestRationale;
-      if ( await Permission.manageExternalStorage.isDenied /*await Permission.storage.isDenied*/) {
-        return;
+
+      if(30<=androidInfo.version.previewSdkInt!) {
+        await Permission.manageExternalStorage.shouldShowRequestRationale;
+        //await Permission.storage.shouldShowRequestRationale;
+        if (/*await Permission.storage.isDenied || */await Permission.manageExternalStorage.isDenied) {
+          developer.log(
+              "Sorry this function needs MANAGE_EXTERNAL_STORAGE permition",
+              name: "${this.runtimeType.toString()}._importFromFile");
+          return;
+        }
+      }else if(19 <=androidInfo.version.sdkInt) {
+        await Permission.storage.shouldShowRequestRationale;
+        if (await Permission.storage.isDenied) {
+          developer.log(
+              "Sorry this function needs READ_EXTERNAL_STORAGE permition",
+              name: "${this.runtimeType.toString()}._importFromFile");
+        }
       }
+
     }else if(Platform.isIOS) {
       if(await Permission.storage.isDenied) {
         return;
