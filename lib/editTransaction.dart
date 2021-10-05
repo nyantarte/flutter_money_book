@@ -31,6 +31,7 @@ class EditTransactionState extends State<EditTransaction> {
   EditTransactionState(this.m_targetData) {
     m_noteText.text = this.m_targetData.m_note;
 
+    m_isValueGreaterZero=0 < this.m_targetData.m_value;
     m_valueText = this.m_targetData.m_value.abs().toString();
 
     m_usages = DataManagerFactory.getManager().getUsages();
@@ -437,14 +438,16 @@ class EditTransactionState extends State<EditTransaction> {
                       this.m_targetData.m_value =
                           -double.parse(this.m_valueText).toInt();
                     }
-                    if (-1 < this.m_methodSelected) {
-                      this.m_targetData.m_method =
-                          this.m_methods[this.m_methodSelected];
+                    if (-1 == this.m_methodSelected) {
+                      this.m_methodSelected=0;
                     }
-                    if (-1 < this.m_usageSelected) {
-                      this.m_targetData.m_usage =
-                          this.m_usages[this.m_usageSelected];
+                    this.m_targetData.m_method =
+                    this.m_methods[this.m_methodSelected];
+                    if (-1 ==this.m_usageSelected) {
+                      this.m_usageSelected=0;
                     }
+                    this.m_targetData.m_usage =
+                    this.m_usages[this.m_usageSelected];
                     this.m_targetData.m_note = this.m_noteText.text;
                     Navigator.of(context).pop(this.m_targetData);
                   },

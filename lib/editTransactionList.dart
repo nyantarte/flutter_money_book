@@ -254,7 +254,7 @@ class EditTransactionListState extends State<EditTransactionList> {
                         DataManagerFactory.getManager().insert(t);
                       } else {
                         DataManagerFactory.getManager().update(t);
-                        print("A");
+
                       }
                     }
                     Navigator.of(context).pop(this.m_targetDate);

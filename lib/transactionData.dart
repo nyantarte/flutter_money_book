@@ -25,7 +25,7 @@ class TransactionData {
 
   @override
   String toString() {
-    return "${MyApp.globalDateTimeFormatter.format(m_transDate)} ${MyApp.globalPriceFormatter.format(m_value)} ${m_note}";
+    return "${MyApp.globalDateTimeFormatter.format(m_transDate)} ${m_method} ${MyApp.globalPriceFormatter.format(m_value)} ${m_note}";
   }
 
   String toCSVString() {
@@ -40,4 +40,11 @@ class TransactionData {
   static TransactionData create() {
     return TransactionData("", DateTime.now(), "", "", 0, "");
   }
+}
+class TransactionList{
+  var usage="";
+  var total=0;
+  List<TransactionData> list=[];
+
+
 }
