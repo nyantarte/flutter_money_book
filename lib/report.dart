@@ -106,8 +106,16 @@ class ReportState extends State<Report> {
                               shrinkWrap: true,
                               itemBuilder: (context, i) {
                                 final tl = snapshot.data!.inList[i];
-                                return Text("${tl.usage} ${tl.total.toString()}",
-                                  style: MyApp.globalTextStyle);
+                                return ListTile(
+                                    onTap:(){
+                                  Navigator.of(context)
+                                      .push(MaterialPageRoute(builder: (context) {
+                                    return TransactionListForm(
+                                        tl);
+                                  }));
+                                },
+                                title: Text("${tl.usage} ${tl.total.toString()}(${tl.substanceToPrevMonth})",
+                                  style: MyApp.globalTextStyle));
                               }
                               ),
                             Text("Spend items", style: MyApp.globalTextStyle),
@@ -125,7 +133,7 @@ class ReportState extends State<Report> {
                                             tl);
                                       }));
                                     },
-                                  title: Text("${tl.usage} ${tl.total.toString()}",
+                                  title: Text("${tl.usage} ${tl.total.toString()}(${tl.substanceToPrevMonth})",
                                     style: MyApp.globalTextStyle));
                               }
                               ),
@@ -140,7 +148,7 @@ class ReportState extends State<Report> {
 
   Future<ReportData> _calcMonthlyData() async {
     final dm = DataManagerFactory.getManager();
-    List<TransactionData> l = await dm.getTransactionByDateRange(
+    var l = await dm.getTransactionByDateRange(
         this.widget._beginCurMonth, this.widget._endCurMonth);
     ReportData rd = ReportData();
     var inList = Map<String, TransactionList>();
@@ -173,6 +181,55 @@ class ReportState extends State<Report> {
         }
       }
     }
+
+    var prevInList = Map<String, TransactionList>();
+    var prevOutList = Map<String, TransactionList>();
+    l = await dm.getTransactionByDateRange(
+        this.widget._beginPrevMonth, this.widget._endPrevMonth);
+
+    for (var t in l) {
+      if (0 < t.m_value) {
+        rd._curInValue += t.m_value;
+        if (prevInList.containsKey(t.m_usage)) {
+          prevInList[t.m_usage]!.total += t.m_value;
+          prevInList[t.m_usage]!.list.add(t);
+        } else {
+          final tl = TransactionList();
+          tl.usage = t.m_usage;
+          tl.total = t.m_value;
+          prevInList[t.m_usage] = tl;
+          prevInList[t.m_usage]!.list.add(t);
+        }
+      } else {
+        rd._curOutValue += -t.m_value;
+        if (prevOutList.containsKey(t.m_usage)) {
+          prevOutList[t.m_usage]!.total += t.m_value;
+          prevOutList[t.m_usage]!.list.add(t);
+        } else {
+          final tl = TransactionList();
+          tl.usage = t.m_usage;
+
+          tl.total = t.m_value;
+          prevOutList[t.m_usage] = tl;
+          prevOutList[t.m_usage]!.list.add(t);
+        }
+      }
+    }
+    for(var k in inList.keys){
+      if(prevInList.containsKey(k)){
+        final curList=inList[k]!;
+        final prevList=prevInList[k]!;
+        curList.substanceToPrevMonth=prevList.total-curList.total;
+      }
+    }
+    for(var k in outList.keys){
+      if(prevOutList.containsKey(k)){
+        final curList=outList[k]!;
+        final prevList=prevOutList[k]!;
+        curList.substanceToPrevMonth=prevList.total-curList.total;
+      }
+    }
+
     for (var v in inList.values) {
       v.list.sort((a,b)=>a.m_transDate.compareTo(b.m_transDate));
       rd.inList.add(v);

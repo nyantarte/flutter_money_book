@@ -45,6 +45,7 @@ class TransactionList{
   var usage="";
   var total=0;
   List<TransactionData> list=[];
+  var substanceToPrevMonth=0;
 
 
 }
